@@ -20,12 +20,12 @@ ADD_SUBDIRECTORY(<dirname>)
 
 ## Commands
 ```bash
-${${CMAKE_CURRENT_BINARY_DIR}/<dirname>/current_version
+${CMAKE_CURRENT_BINARY_DIR}/<dirname>/current_version
 ```
 Returns the current version, without an new-line appended.
 
 ```bash
-${${CMAKE_CURRENT_BINARY_DIR}/<dirname>/bump_version -l <version-level> [-m "commit message"] [-M "tag message"] [-t] [-p] [-T]
+${CMAKE_CURRENT_BINARY_DIR}/<dirname>/bump_version -l <version-level> [-m "commit message"] [-M "tag message"] [-t] [-p] [-T]
 ```
  * **version-level**: the version level to bump, case insensitive.
   May be one of major, minor, patch or tweak. Required
