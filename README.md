@@ -36,3 +36,11 @@ ${${CMAKE_CURRENT_BINARY_DIR}/<dirname>/bump_version -l <version-level> [-m "com
  * **-t**: Set a commit tag to the new version.
  * **-p**: Push the changes (and tag if set) to the current branch.
  * **-T**: Try only. Displays what the command will do, but takes no action.
+
+## Make Targets
+
+The following `make` targets are defined:
+ * **bump_tweak**: equivalent to `bump_version -l tweak -t -p`
+ * **bump_patch**: equivalent to `bump_version -l patch -t -p`
+ * **bump_minor**: equivalent to `bump_version -l minor -t -p`
+ * **bump_major**: equivalent to `bump_version -l major -t -p` 
