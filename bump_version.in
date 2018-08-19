@@ -1,0 +1,114 @@
+#! /bin/bash
+
+BIN="@CMAKE_CURRENT_BINARY_DIR@"
+CURRENT_VERSION=$(${BIN}/current_version)
+
+while getopts ":l:m:M:tpT" opt; do
+    case $opt in
+        l)  VERSION_LEVEL=$(echo $OPTARG | awk '{print toupper($0)}')
+            ;;
+        m)  COMMIT_MESSAGE=${OPTARG}
+            ;;
+        M)  TAG_MESSAGE=${OPTARG}
+            ;;
+        t)  TAG_COMMIT="yes"
+            ;;
+        p)  PUSH_COMMIT="yes"
+            ;;
+        T)  TRY_ONLY="yes"
+            ;;
+        \?)
+            echo "Invalid option: -$OPTARG" >&2
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z ${VERSION_LEVEL+x} ]
+then
+    echo "Version level (-l) is a required parameter." >&2
+    exit 1
+fi
+
+case $VERSION_LEVEL in
+    TWEAK)
+        nv=$(expr @PROJECT_VERSION_TWEAK@ + 1)
+        NEW_VERSION="@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@.${nv}"
+        ;;
+    PATCH)
+        nv=$(expr @PROJECT_VERSION_PATCH@ + 1)
+        NEW_VERSION="@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.${nv}.0"
+        ;;
+    MINOR)
+        nv=$(expr @PROJECT_VERSION_MINOR@ + 1)
+        NEW_VERSION="@PROJECT_VERSION_MAJOR@.${nv}.0.0"
+        ;;
+    MAJOR)
+        nv=$(expr @PROJECT_VERSION_MAJOR@ + 1)
+        NEW_VERSION="${nv}.0.0.0"
+        ;;
+    *)
+        echo "Invalid version level: $VERSION_LEVEL" >&2
+        exit 1
+        ;;
+esac
+
+if [ -z ${NEW_VERSION+x} ]
+then
+    echo "New version was not set." >&2
+    exit 1
+fi
+
+if [ -z ${COMMIT_MESSAGE+x} ]
+then
+    COMMIT_MESSAGE="${CURRENT_VERSION} => ${NEW_VERSION} ${VERSION_LEVEL}"
+fi
+
+if [ -z ${TAG_MESSAGE+x} ]
+then
+    TAG_MESSAGE="${COMMIT_MESSAGE}"
+fi
+
+if [ ! -z ${TRY_ONLY+x} ]
+then
+    echo "Current version: ${CURRENT_VERSION}"
+    echo "New version:     ${NEW_VERSION}"
+    echo "Commit message:  ${COMMIT_MESSAGE}"
+    if [ ! -z ${TAG_COMMIT+x} ]
+    then
+        echo "Tag commit with: ${NEW_VERSION}"
+    fi
+    if [ ! -z ${PUSH_COMMIT+x} ]
+    then
+        echo "Push commit [and tags]"
+    fi
+    exit 0
+fi
+
+set -x
+
+CMAKE_LISTS="@PROJECT_SOURCE_DIR@/CMakeLists.txt"
+TMP_CMAKE_LISTS="@CMAKE_CURRENT_BINARY_DIR@/CMakeLists.txt"
+cp ${CMAKE_LISTS} ${TMP_CMAKE_LISTS}
+sed -e "s/\(project[(].\+[[:blank:]]\+VERSION[[:blank:]]\+\)${CURRENT_VERSION}/\1${NEW_VERSION}/" ${TMP_CMAKE_LISTS} > ${CMAKE_LISTS}
+rm ${TMP_CMAKE_LISTS}
+
+git add ${CMAKE_LISTS}
+git commit -m "${COMMIT_MESSAGE}"
+
+REMOTE=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} | cut -f1 -d/)
+BRANCH=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} | cut -f2 -d/)
+
+if [ ! -z ${TAG_COMMIT+x} ]
+then
+    git tag -a ${NEW_VERSION} -m "${TAG_MESSAGE}"
+fi
+
+if [ ! -z ${PUSH_COMMIT+x} ]
+then
+    git push ${REMOTE} ${BRANCH}
+    if [ ! -z ${TAG_COMMIT+x} ]
+    then
+        git push ${REMOTE} ${NEW_VERSION}
+    fi
+fi
