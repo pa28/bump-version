@@ -20,7 +20,7 @@ ADD_SUBDIRECTORY(<dirname>)
 
 ## Commands
 ```bash
-${${CMAKE_CURRENT_BINARY_DIR}/<dirname>/current_version
+${CMAKE_CURRENT_BINARY_DIR}/<dirname>/current_version
 ```
 Returns the current version, without an new-line appended.
 
