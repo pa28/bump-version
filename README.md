@@ -25,7 +25,7 @@ ${CMAKE_CURRENT_BINARY_DIR}/<dirname>/current_version
 Returns the current version, without an new-line appended.
 
 ```bash
-${CMAKE_CURRENT_BINARY_DIR}/<dirname>/bump_version -l <version-level> [-m "commit message"] [-M "tag message"] [-t] [-p] [-T]
+${CMAKE_CURRENT_BINARY_DIR}/<dirname>/bump_version -l <version-level> [-m "commit message"] [-M "tag message"] [-t] [-p] [-T] [-r remote] [-b branch]
 ```
  * **version-level**: the version level to bump, case insensitive.
   May be one of major, minor, patch or tweak. Required
@@ -36,11 +36,13 @@ ${CMAKE_CURRENT_BINARY_DIR}/<dirname>/bump_version -l <version-level> [-m "commi
  * **-t**: Set a commit tag to the new version.
  * **-p**: Push the changes (and tag if set) to the current branch.
  * **-T**: Try only. Displays what the command will do, but takes no action.
+ * **-r remote** Set remote repository to push to, If not set the script will try to ascertain the proper remote.
+ * **-b branch** Set the branch to push to. If not set the script will try to ascertain the proper branch.
 
 ## Make Targets
 
 The following `make` targets are defined:
- * **bump_tweak**: equivalent to `bump_version -l tweak -t -p`
- * **bump_patch**: equivalent to `bump_version -l patch -t -p`
- * **bump_minor**: equivalent to `bump_version -l minor -t -p`
- * **bump_major**: equivalent to `bump_version -l major -t -p` 
+ * **bump_tweak**: equivalent to `bump_version -l tweak -t`
+ * **bump_patch**: equivalent to `bump_version -l patch -t`
+ * **bump_minor**: equivalent to `bump_version -l minor -t`
+ * **bump_major**: equivalent to `bump_version -l major -t` 
