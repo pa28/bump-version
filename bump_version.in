@@ -3,7 +3,7 @@
 BIN="@CMAKE_CURRENT_BINARY_DIR@"
 CURRENT_VERSION=$(${BIN}/current_version)
 
-while getopts ":l:m:M:tpT" opt; do
+while getopts ":l:m:M:tpTr:b:" opt; do
     case $opt in
         l)  VERSION_LEVEL=$(echo $OPTARG | awk '{print toupper($0)}')
             ;;
@@ -16,6 +16,10 @@ while getopts ":l:m:M:tpT" opt; do
         p)  PUSH_COMMIT="yes"
             ;;
         T)  TRY_ONLY="yes"
+            ;;
+        r)  REMOTE=${OPTARG}
+            ;;
+        b)  BRANCH=${OPTARG}
             ;;
         \?)
             echo "Invalid option: -$OPTARG" >&2
@@ -96,9 +100,6 @@ rm ${TMP_CMAKE_LISTS}
 git add ${CMAKE_LISTS}
 git commit -m "${COMMIT_MESSAGE}"
 
-REMOTE=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} | cut -f1 -d/)
-BRANCH=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} | cut -f2 -d/)
-
 if [ ! -z ${TAG_COMMIT+x} ]
 then
     git tag -a ${NEW_VERSION} -m "${TAG_MESSAGE}"
@@ -106,6 +107,16 @@ fi
 
 if [ ! -z ${PUSH_COMMIT+x} ]
 then
+    if [ -z ${REMOTE+x} ]
+    then
+        REMOTE=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} | cut -f1 -d/)
+    fi
+    
+    if [ -z ${BRANCH+x} ]
+    then
+        BRANCH=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} | cut -f2 -d/)
+    fi
+
     git push ${REMOTE} ${BRANCH}
     if [ ! -z ${TAG_COMMIT+x} ]
     then
